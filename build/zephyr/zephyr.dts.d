@@ -18,4 +18,5 @@ empty_file.o: C:/ncs/v2.4.0/zephyr/misc/empty_file.c \
  C:/ncs/v2.4.0/zephyr/include/zephyr/dt-bindings/pwm/pwm.h \
  C:/ncs/v2.4.0/zephyr/dts/common/freq.h \
  C:/ncs/v2.4.0/zephyr/dts/arm/nordic/override.dtsi \
- C:/ncs/v2.4.0/zephyr/boards/arm/nrf52dk_nrf52832/nrf52dk_nrf52832-pinctrl.dtsi
+ C:/ncs/v2.4.0/zephyr/boards/arm/nrf52dk_nrf52832/nrf52dk_nrf52832-pinctrl.dtsi \
+ C:/Users/petrikas.lu/Desktop/WORK/NRF/nrf52_learning/boards/nrf52dk_nrf52832.overlay

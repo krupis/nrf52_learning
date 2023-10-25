@@ -9,12 +9,7 @@
 #include "stdio.h"
 #include "my_gpio.h"
 #include "zephyr/drivers/uart.h"
-
-const struct device *uart = DEVICE_DT_GET(DT_NODELABEL(uart0));
-
-//static uint8_t tx_buf[] = {"nRF Connect SDK Fundamentals Course \n\r"};
-static uint8_t rx_buf[20] = {0}; // A buffer to store incoming UART data
-
+#include <zephyr/sys/ring_buffer.h>
 
 
 #define LOG_LEVEL 4
@@ -23,17 +18,34 @@ LOG_MODULE_REGISTER(nrf52_learning);
 
 
 
+#define UART_BUF_SIZE 16
+
+#define UART_RX_TIMEOUT_MS 100
+K_SEM_DEFINE(rx_disabled, 0, 1);
+
+#define UART_RX_MSG_QUEUE_SIZE 8
+struct uart_msg_queue_item
+{
+	uint8_t bytes[UART_BUF_SIZE];
+	uint32_t length;
+};
 
 
-const struct uart_config uart_cfg = {
-	.baudrate = 115200,
-	.parity = UART_CFG_PARITY_NONE,
-	.stop_bits = UART_CFG_STOP_BITS_1,
-	.data_bits = UART_CFG_DATA_BITS_8,
-	.flow_ctrl = UART_CFG_FLOW_CTRL_NONE};
+// UART RX primary buffers
+uint8_t uart_double_buffer[2][UART_BUF_SIZE];
+uint8_t *uart_buf_next = uart_double_buffer[1];
+
+// UART RX message queue
+K_MSGQ_DEFINE(uart_rx_msgq, sizeof(struct uart_msg_queue_item), UART_RX_MSG_QUEUE_SIZE, 4);
+
+static const struct device *dev_uart;
+
+
+
 
 static void uart_cb(const struct device *dev, struct uart_event *evt, void *user_data)
 {
+	static struct uart_msg_queue_item new_message;
 	switch (evt->type)
 	{
 
@@ -46,29 +58,31 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 		break;
 
 	case UART_RX_RDY:
-		//printf("Data received = %s \n",evt->data.rx_buf);
-		//printf("Data received length = %u \n",evt->data.rx.len);
-
-		LOG_HEXDUMP_DBG(&evt->data.rx_buf.buf[evt->data.rx.offset], evt->data.rx.len  , "Data received: ");
-
-
-
+		memcpy(new_message.bytes, evt->data.rx.buf + evt->data.rx.offset, evt->data.rx.len);
+		new_message.length = evt->data.rx.len;
+		if (k_msgq_put(&uart_rx_msgq, &new_message, K_NO_WAIT) != 0)
+		{
+			printk("Error: Uart RX message queue full!\n");
+		}
+		break;
 
 		break;
 
 	case UART_RX_BUF_REQUEST:
 		printf("requesting buffer \n");
+		uart_rx_buf_rsp(dev, uart_buf_next, UART_BUF_SIZE);
 		// do something
 		break;
 
 	case UART_RX_BUF_RELEASED:
 		printf("buffer released \n");
-		// do something
+		uart_buf_next = evt->data.rx_buf.buf;
+
 		break;
 
 	case UART_RX_DISABLED:
 		printf("rx disabled \n");
-		uart_rx_enable(dev, rx_buf, sizeof(rx_buf), 100);
+		k_sem_give(&rx_disabled);
 		break;
 
 	case UART_RX_STOPPED:
@@ -80,8 +94,8 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 	}
 }
 
-int main(void)
-{
+void app_uart_init(){
+	const struct device *uart = DEVICE_DT_GET(DT_NODELABEL(uart0));
 
 	if (!device_is_ready(uart))
 	{
@@ -94,23 +108,28 @@ int main(void)
 	{
 		return err;
 	}
+	uart_rx_enable(uart, uart_double_buffer[0], UART_BUF_SIZE, 100);
+}
 
-	uart_rx_enable(uart, rx_buf, sizeof(rx_buf), 100);
 
-	// err = uart_tx(uart, tx_buf, sizeof(tx_buf), SYS_FOREVER_US);
-	// if (err)
-	// {
-	// 	return err;
-	// }
 
-	// configure_leds();
-	// configure_buttons();
-	// turn_on_red_led();
-	// turn_on_blue_led();
+
+
+
+int main(void)
+{
+	app_uart_init();
+
+	struct uart_msg_queue_item incoming_message;
 
 	while (1)
 	{
-		k_msleep(1000);
+		// This function will not return until a new message is ready
+		k_msgq_get(&uart_rx_msgq, &incoming_message, K_FOREVER);
+		// Process the message here.
+		static uint8_t string_buffer[UART_BUF_SIZE + 1];
+		memcpy(string_buffer, incoming_message.bytes, incoming_message.length);
+		string_buffer[incoming_message.length] = 0;
+		printk("RX %i: %s\n", incoming_message.length, string_buffer);
 	}
-	return 0;
 }

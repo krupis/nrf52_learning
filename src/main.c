@@ -11,12 +11,9 @@
 #include "zephyr/drivers/uart.h"
 #include <zephyr/sys/ring_buffer.h>
 
-
 #define LOG_LEVEL 4
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(nrf52_learning);
-
-
 
 #define UART_BUF_SIZE 16
 
@@ -30,7 +27,6 @@ struct uart_msg_queue_item
 	uint32_t length;
 };
 
-
 // UART RX primary buffers
 uint8_t uart_double_buffer[2][UART_BUF_SIZE];
 uint8_t *uart_buf_next = uart_double_buffer[1];
@@ -39,9 +35,6 @@ uint8_t *uart_buf_next = uart_double_buffer[1];
 K_MSGQ_DEFINE(uart_rx_msgq, sizeof(struct uart_msg_queue_item), UART_RX_MSG_QUEUE_SIZE, 4);
 
 static const struct device *dev_uart;
-
-
-
 
 static void uart_cb(const struct device *dev, struct uart_event *evt, void *user_data)
 {
@@ -66,12 +59,9 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 		}
 		break;
 
-		break;
-
 	case UART_RX_BUF_REQUEST:
 		printf("requesting buffer \n");
-		uart_rx_buf_rsp(dev, uart_buf_next, UART_BUF_SIZE);
-		// do something
+		uart_rx_buf_rsp(dev_uart, uart_buf_next, UART_BUF_SIZE);
 		break;
 
 	case UART_RX_BUF_RELEASED:
@@ -94,27 +84,23 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 	}
 }
 
-void app_uart_init(){
-	const struct device *uart = DEVICE_DT_GET(DT_NODELABEL(uart0));
+void app_uart_init()
+{
+	dev_uart = DEVICE_DT_GET(DT_NODELABEL(uart0));
 
-	if (!device_is_ready(uart))
+	if (!device_is_ready(dev_uart))
 	{
 		return 0;
 	}
 
 	int err;
-	err = uart_callback_set(uart, uart_cb, NULL);
+	err = uart_callback_set(dev_uart, uart_cb, NULL);
 	if (err)
 	{
 		return err;
 	}
-	uart_rx_enable(uart, uart_double_buffer[0], UART_BUF_SIZE, 100);
+	uart_rx_enable(dev_uart, uart_double_buffer[0], UART_BUF_SIZE, 100);
 }
-
-
-
-
-
 
 int main(void)
 {

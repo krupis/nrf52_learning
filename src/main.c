@@ -15,9 +15,9 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(nrf52_learning);
 
-#define UART_BUF_SIZE 16
+#define UART_BUF_SIZE 50
 
-#define UART_RX_TIMEOUT_MS 100
+#define UART_RX_TIMEOUT_MS 1
 K_SEM_DEFINE(rx_disabled, 0, 1);
 
 #define UART_RX_MSG_QUEUE_SIZE 8
@@ -67,7 +67,6 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 	case UART_RX_BUF_RELEASED:
 		printf("buffer released \n");
 		uart_buf_next = evt->data.rx_buf.buf;
-
 		break;
 
 	case UART_RX_DISABLED:

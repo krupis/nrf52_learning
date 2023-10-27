@@ -20,8 +20,6 @@ LOG_MODULE_REGISTER(nrf52_learning);
 #define UART_RX_TIMEOUT_MS 1000
 K_SEM_DEFINE(rx_disabled, 0, 1);
 
-
-
 // UART RX primary buffers
 uint8_t uart_double_buffer[2][UART_BUF_SIZE];
 
@@ -30,8 +28,6 @@ uint8_t *uart_buf_next = uart_double_buffer[1];
 uint8_t complete_message[UART_BUF_SIZE];
 uint8_t complete_message_counter = 0;
 bool currently_active_buffer = 1; // 0 - uart_double_buffer[0] is active, 1 - uart_double_buffer[1] is active
-
-
 
 static const struct device *dev_uart;
 
@@ -112,10 +108,6 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 			}
 		}
 
-
-
-
-
 		break;
 
 	case UART_RX_BUF_REQUEST:
@@ -171,5 +163,4 @@ void app_uart_init()
 int main(void)
 {
 	app_uart_init();
-
 }

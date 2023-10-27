@@ -1,3 +1,4 @@
+#ifndef MY_GPIO_H
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
@@ -7,3 +8,4 @@ void configure_leds();
 void configure_buttons();
 void turn_on_red_led();
 void turn_on_blue_led();
+#endif

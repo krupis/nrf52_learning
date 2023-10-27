@@ -15,7 +15,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(nrf52_learning);
 
-#define UART_BUF_SIZE 8
+#define UART_BUF_SIZE 20
 
 #define UART_RX_TIMEOUT_MS 1000
 K_SEM_DEFINE(rx_disabled, 0, 1);
@@ -25,8 +25,6 @@ uint8_t uart_double_buffer[2][UART_BUF_SIZE];
 
 uint8_t *uart_buf_next = uart_double_buffer[1];
 
-uint8_t complete_message[UART_BUF_SIZE];
-uint8_t complete_message_counter = 0;
 bool currently_active_buffer = 1; // 0 - uart_double_buffer[0] is active, 1 - uart_double_buffer[1] is active
 
 static const struct device *dev_uart;
@@ -47,67 +45,8 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 
 	case UART_RX_RDY:
 
-		printf("Received %i bytes \n", evt->data.rx.len);
-		printf("Offset = %i  \n", evt->data.rx.offset);
-
-		printf("evt->data.rx.buf: [");
-		for (int i = 0; i < UART_BUF_SIZE; i++)
-		{
-			printf("%u, ", evt->data.rx.buf[i]);
-		}
-		printf("] \n");
-
-		printf("uart_double_buffer[0]: [");
-		for (int i = 0; i < UART_BUF_SIZE; i++)
-		{
-			printf("%u, ", uart_double_buffer[0][i]);
-		}
-		printf("] \n");
-
-		printf("uart_double_buffer[1]: [");
-		for (int i = 0; i < UART_BUF_SIZE; i++)
-		{
-			printf("%u, ", uart_double_buffer[1][i]);
-		}
-		printf("] \n");
-
-		printf("Constructing a complete message \n");
-		if (currently_active_buffer == 0)
-		{
-			// read all characters one by one till new line is found
-			for (int i = 0 + evt->data.rx.offset; i < UART_BUF_SIZE; i++)
-			{
-				complete_message[complete_message_counter] = uart_double_buffer[0][i];
-				complete_message_counter++;
-				if (uart_double_buffer[0][i] == '\n')
-				{
-					printf("new line found at buffer 0 index = %i \n", i);
-					complete_message_counter = 0;
-					printf("complete_message = %s \n", complete_message);
-					memset(&complete_message, 0, sizeof(complete_message)); // clear out the buffer to prepare for next read.
-					break;
-				}
-			}
-		}
-
-		if (currently_active_buffer == 1)
-		{
-			// read all characters one by one till new line is found
-			for (int i = 0 + evt->data.rx.offset; i < UART_BUF_SIZE; i++)
-			{
-				complete_message[complete_message_counter] = uart_double_buffer[1][i];
-				complete_message_counter++;
-				if (uart_double_buffer[1][i] == '\n')
-				{
-					printf("new line found at buffer 1 index = %i \n", i);
-					complete_message_counter = 0;
-					printf("complete_message = %s \n", complete_message);
-					memset(&complete_message, 0, sizeof(complete_message)); // clear out the buffer to prepare for next read.
-					break;
-				}
-			}
-		}
-
+		printk("Received %i bytes \n", evt->data.rx.len);
+		printk("Offset = %i  \n", evt->data.rx.offset);
 		break;
 
 	case UART_RX_BUF_REQUEST:

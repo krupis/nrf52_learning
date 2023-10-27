@@ -15,30 +15,29 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(nrf52_learning);
 
-#define UART_BUF_SIZE 50
+#define UART_BUF_SIZE 8
 
-#define UART_RX_TIMEOUT_MS 1
+#define UART_RX_TIMEOUT_MS 1000
 K_SEM_DEFINE(rx_disabled, 0, 1);
 
-#define UART_RX_MSG_QUEUE_SIZE 8
-struct uart_msg_queue_item
-{
-	uint8_t bytes[UART_BUF_SIZE];
-	uint32_t length;
-};
+
 
 // UART RX primary buffers
 uint8_t uart_double_buffer[2][UART_BUF_SIZE];
+
 uint8_t *uart_buf_next = uart_double_buffer[1];
 
-// UART RX message queue
-K_MSGQ_DEFINE(uart_rx_msgq, sizeof(struct uart_msg_queue_item), UART_RX_MSG_QUEUE_SIZE, 4);
+uint8_t complete_message[UART_BUF_SIZE];
+uint8_t complete_message_counter = 0;
+bool currently_active_buffer = 1; // 0 - uart_double_buffer[0] is active, 1 - uart_double_buffer[1] is active
+
+
 
 static const struct device *dev_uart;
 
 static void uart_cb(const struct device *dev, struct uart_event *evt, void *user_data)
 {
-	static struct uart_msg_queue_item new_message;
+
 	switch (evt->type)
 	{
 
@@ -51,21 +50,84 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 		break;
 
 	case UART_RX_RDY:
-		memcpy(new_message.bytes, evt->data.rx.buf + evt->data.rx.offset, evt->data.rx.len);
-		new_message.length = evt->data.rx.len;
-		if (k_msgq_put(&uart_rx_msgq, &new_message, K_NO_WAIT) != 0)
+
+		printf("Received %i bytes \n", evt->data.rx.len);
+		printf("Offset = %i  \n", evt->data.rx.offset);
+
+		printf("evt->data.rx.buf: [");
+		for (int i = 0; i < UART_BUF_SIZE; i++)
 		{
-			printk("Error: Uart RX message queue full!\n");
+			printf("%u, ", evt->data.rx.buf[i]);
 		}
+		printf("] \n");
+
+		printf("uart_double_buffer[0]: [");
+		for (int i = 0; i < UART_BUF_SIZE; i++)
+		{
+			printf("%u, ", uart_double_buffer[0][i]);
+		}
+		printf("] \n");
+
+		printf("uart_double_buffer[1]: [");
+		for (int i = 0; i < UART_BUF_SIZE; i++)
+		{
+			printf("%u, ", uart_double_buffer[1][i]);
+		}
+		printf("] \n");
+
+		printf("Constructing a complete message \n");
+		if (currently_active_buffer == 0)
+		{
+			// read all characters one by one till new line is found
+			for (int i = 0 + evt->data.rx.offset; i < UART_BUF_SIZE; i++)
+			{
+				complete_message[complete_message_counter] = uart_double_buffer[0][i];
+				complete_message_counter++;
+				if (uart_double_buffer[0][i] == '\n')
+				{
+					printf("new line found at buffer 0 index = %i \n", i);
+					complete_message_counter = 0;
+					break;
+				}
+			}
+		}
+
+		if (currently_active_buffer == 1)
+		{
+			// read all characters one by one till new line is found
+			for (int i = 0 + evt->data.rx.offset; i < UART_BUF_SIZE; i++)
+			{
+				complete_message[complete_message_counter] = uart_double_buffer[1][i];
+				complete_message_counter++;
+				if (uart_double_buffer[1][i] == '\n')
+				{
+					printf("new line found at buffer 1 index = %i \n", i);
+					complete_message_counter = 0;
+					break;
+				}
+			}
+		}
+		printf("complete_message = %s \n", complete_message);
+
+
+
 		break;
 
 	case UART_RX_BUF_REQUEST:
-		printf("requesting buffer \n");
 		uart_rx_buf_rsp(dev_uart, uart_buf_next, UART_BUF_SIZE);
+		currently_active_buffer = !currently_active_buffer;
+		if (currently_active_buffer == 0)
+		{
+			printf("currently active buffer is uart_double_buffer[0] \n");
+		}
+		else
+		{
+			printf("currently active buffer is uart_double_buffer[1] \n");
+		}
 		break;
 
 	case UART_RX_BUF_RELEASED:
-		printf("buffer released \n");
+		printf("Old buffer has been released \n");
 		uart_buf_next = evt->data.rx_buf.buf;
 		break;
 
@@ -98,23 +160,11 @@ void app_uart_init()
 	{
 		return err;
 	}
-	uart_rx_enable(dev_uart, uart_double_buffer[0], UART_BUF_SIZE, 100);
+	uart_rx_enable(dev_uart, uart_double_buffer[0], UART_BUF_SIZE, UART_RX_TIMEOUT_MS);
 }
 
 int main(void)
 {
 	app_uart_init();
 
-	struct uart_msg_queue_item incoming_message;
-
-	while (1)
-	{
-		// This function will not return until a new message is ready
-		k_msgq_get(&uart_rx_msgq, &incoming_message, K_FOREVER);
-		// Process the message here.
-		static uint8_t string_buffer[UART_BUF_SIZE + 1];
-		memcpy(string_buffer, incoming_message.bytes, incoming_message.length);
-		string_buffer[incoming_message.length] = 0;
-		printk("RX %i: %s\n", incoming_message.length, string_buffer);
-	}
 }

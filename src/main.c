@@ -54,21 +54,21 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 		currently_active_buffer = !currently_active_buffer;
 		if (currently_active_buffer == 0)
 		{
-			printf("currently active buffer is uart_double_buffer[0] \n");
+			printk("currently active buffer is uart_double_buffer[0] \n");
 		}
 		else
 		{
-			printf("currently active buffer is uart_double_buffer[1] \n");
+			printk("currently active buffer is uart_double_buffer[1] \n");
 		}
 		break;
 
 	case UART_RX_BUF_RELEASED:
-		printf("Old buffer has been released \n");
+		printk("Old buffer has been released \n");
 		uart_buf_next = evt->data.rx_buf.buf;
 		break;
 
 	case UART_RX_DISABLED:
-		printf("rx disabled \n");
+		printk("rx disabled \n");
 		k_sem_give(&rx_disabled);
 		break;
 

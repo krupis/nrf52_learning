@@ -87,6 +87,8 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 				{
 					printf("new line found at buffer 0 index = %i \n", i);
 					complete_message_counter = 0;
+					printf("complete_message = %s \n", complete_message);
+					memset(&complete_message, 0, sizeof(complete_message)); // clear out the buffer to prepare for next read.
 					break;
 				}
 			}
@@ -103,11 +105,14 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 				{
 					printf("new line found at buffer 1 index = %i \n", i);
 					complete_message_counter = 0;
+					printf("complete_message = %s \n", complete_message);
+					memset(&complete_message, 0, sizeof(complete_message)); // clear out the buffer to prepare for next read.
 					break;
 				}
 			}
 		}
-		printf("complete_message = %s \n", complete_message);
+
+
 
 
 

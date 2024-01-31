@@ -15,7 +15,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(nrf52_learning);
 
-#define UART_BUF_SIZE 20
+#define UART_BUF_SIZE 24
 
 #define UART_RX_TIMEOUT_MS 1000
 K_SEM_DEFINE(rx_disabled, 0, 1);

@@ -4,5 +4,6 @@
         "gpio.h": "c",
         "log.h": "c"
     },
+    "nrf-connect.topdir": "${nrf-connect.sdk:2.5.1}",
     "sonarlint.pathToCompileCommands": "${workspaceFolder}/build\\compile_commands.json"
 }

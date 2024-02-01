@@ -1,0 +1,4 @@
+
+arduino_serial: &uart1 {
+	status = "okay";
+};

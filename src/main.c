@@ -70,6 +70,28 @@ static void uart1_irq_transmit_handler(const struct device *dev, void *user_data
 		LOG_ERR("Couldn't update IRQ\n");
 		return;
 	}
+
+	// METHOD1
+	/*
+	if (uart_irq_tx_ready(dev))
+	{
+		int tx_sent = uart_fifo_fill(dev, (uint8_t *)tx_data, tx_data_length);
+
+		if (tx_sent <= 0)
+		{
+			 LOG_ERR("Error %d sending data over UART1 bus\n", tx_sent);
+			 return;
+		}
+
+		while(uart_irq_tx_complete(dev) != 1){
+			LOG_INF("Wait for UART1 data transmition complete\n");
+		}
+		LOG_INF("UART1 data transmitted\n");
+		uart_irq_tx_disable(dev);
+		k_sem_give(&tx_sem);
+	}
+	*/
+
 	// METHOD2
 	if (uart_irq_tx_ready(dev) && tx_data_idx < tx_data_length)
 	{

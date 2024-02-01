@@ -50,27 +50,6 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 		printf("Received %i bytes \n", evt->data.rx.len);
 		printf("Offset = %i  \n", evt->data.rx.offset);
 
-		// printf("evt->data.rx.buf: [");
-		// for (int i = 0; i < UART_BUF_SIZE; i++)
-		// {
-		// 	printf("%u, ", evt->data.rx.buf[i]);
-		// }
-		// printf("] \n");
-
-		// printf("uart_double_buffer[0]: [");
-		// for (int i = 0; i < UART_BUF_SIZE; i++)
-		// {
-		// 	printf("%u, ", uart_double_buffer[0][i]);
-		// }
-		// printf("] \n");
-
-		// printf("uart_double_buffer[1]: [");
-		// for (int i = 0; i < UART_BUF_SIZE; i++)
-		// {
-		// 	printf("%u, ", uart_double_buffer[1][i]);
-		// }
-		// printf("] \n");
-
 		printf("Constructing a complete message \n");
 		if (currently_active_buffer == 0)
 		{

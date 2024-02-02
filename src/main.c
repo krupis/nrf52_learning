@@ -46,8 +46,8 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 
 	case UART_RX_RDY:
 
-		printk("Received %i bytes \n", evt->data.rx.len);
-		printk("Offset = %i  \n", evt->data.rx.offset);
+		LOG_INF("Received %i bytes \n", evt->data.rx.len);
+		LOG_INF("Offset = %i  \n", evt->data.rx.offset);
 
 		if (currently_active_buffer == 0)
 		{
@@ -59,7 +59,7 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 				if (uart_double_buffer[0][i] == '\n')
 				{
 					complete_message_counter = 0;
-					printk("complete_message = %s \n", complete_message);
+					LOG_INF("complete_message = %s \n", complete_message);
 					memset(&complete_message, 0, sizeof(complete_message)); // clear out the buffer to prepare for next read.
 					break;
 				}
@@ -76,7 +76,7 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 				if (uart_double_buffer[1][i] == '\n')
 				{
 					complete_message_counter = 0;
-					printk("complete_message = %s \n", complete_message);
+					LOG_INF("complete_message = %s \n", complete_message);
 					memset(&complete_message, 0, sizeof(complete_message)); // clear out the buffer to prepare for next read.
 					break;
 				}

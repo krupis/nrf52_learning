@@ -9,4 +9,4 @@
 void app_uart1_init();
 
 
-void uart1_send_string(const char *str);
+bool uart1_send_string(const char *str);

@@ -10,4 +10,10 @@ target_sources(app PRIVATE src/main.c)
 target_sources(app PRIVATE components/my_gpio/my_gpio.c)
 target_include_directories(app PRIVATE components/my_gpio)
 
+target_sources(app PRIVATE components/uart0/uart0.c)
+target_include_directories(app PRIVATE components/uart0)
+
+target_sources(app PRIVATE components/uart1/uart1.c)
+target_include_directories(app PRIVATE components/uart1)
+
 

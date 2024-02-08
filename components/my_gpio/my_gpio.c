@@ -44,20 +44,20 @@ void configure_leds()
 	int ret;
 
 	if (!gpio_is_ready_dt(&red_led)) {
-		return 0;
+		return;
 	}
 	if (!gpio_is_ready_dt(&blue_led)) {
-		return 0;
+		return;
 	}
 
 	ret = gpio_pin_configure_dt(&red_led, GPIO_OUTPUT_ACTIVE);
 	if (ret < 0) {
-		return 0;
+		return;
 	}
 
 	ret = gpio_pin_configure_dt(&blue_led, GPIO_OUTPUT_ACTIVE);
 	if (ret < 0) {
-		return 0;
+		return;
 	}
 }
 
@@ -71,22 +71,22 @@ void configure_buttons(){
 
 	ret = gpio_pin_configure_dt(&button1, GPIO_INPUT);
 	if (ret < 0) {
-		return 0;
+		return;
 	}
 
 	ret = gpio_pin_configure_dt(&button2, GPIO_INPUT);
 	if (ret < 0) {
-		return 0;
+		return;
 	}
 
 	ret = gpio_pin_configure_dt(&button3, GPIO_INPUT);
 	if (ret < 0) {
-		return 0;
+		return;
 	}
 
 	ret = gpio_pin_configure_dt(&button4, GPIO_INPUT);
 	if (ret < 0) {
-		return 0;
+		return;
 	}
 
 

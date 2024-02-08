@@ -17,6 +17,12 @@
 LOG_MODULE_REGISTER(nrf52_learning);
 
 
+#define STACKSIZE 1024
+
+
+K_THREAD_DEFINE(uart0_parser, STACKSIZE, uart0_parser_thread, NULL, NULL, NULL, 7, 0, 0);
+K_THREAD_DEFINE(uart1_parser, STACKSIZE, uart1_parser_thread, NULL, NULL, NULL, 7, 0, 0);
+
 
 int main(void)
 {
@@ -24,7 +30,7 @@ int main(void)
 	app_uart1_init();
 	while(1){	
 		//uart_tx(dev_uart1, "Hello World\n", 12, 1000);
-		uart1_send_string("Hello World\n");
+		//uart1_send_string("Hello World\n");
 		k_sleep(K_MSEC(1000));
 	}
 

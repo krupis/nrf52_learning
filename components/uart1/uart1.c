@@ -1,5 +1,4 @@
 #include "uart1.h"
-#include "uart1_parser.h"
 
 #define LOG_LEVEL 4
 #include <zephyr/logging/log.h>
@@ -21,14 +20,8 @@ static const struct device *dev_uart1;
 static void uart1_cb(const struct device *dev, struct uart_event *evt, void *user_data);
 
 // MESSAGE QUEUE IMPLEMENTATION
-#define message_queue_size 20
-K_MSGQ_DEFINE(message_queue, sizeof(char *), message_queue_size, 4);
 
-#define MY_STACK_SIZE 512
-#define MY_PRIORITY 5
-
-static void uart1_parser_thread();
-K_THREAD_DEFINE(uart1_parser, MY_STACK_SIZE, uart1_parser_thread, NULL, NULL, NULL, MY_PRIORITY, 0, 0);
+K_MSGQ_DEFINE(uart1_message_queue, uart1_message_size * sizeof(uint8_t *), uart1_message_queue_size, 1);
 // END OF MESSAGE QUEUE IMPLEMENTATION
 
 static void uart1_cb(const struct device *dev, struct uart_event *evt, void *user_data)
@@ -59,9 +52,8 @@ static void uart1_cb(const struct device *dev, struct uart_event *evt, void *use
                 if (uart1_double_buffer[0][i] == '\n')
                 {
                     complete_message_uart1_counter = 0;
-                    LOG_INF("complete_message_uart1 = %s \n", complete_message_uart1);
-                    k_msgq_put(&message_queue, &complete_message_uart1, K_NO_WAIT);
-
+                    // LOG_INF("complete_message_uart1 = %s \n", complete_message_uart1);
+                    k_msgq_put(&uart1_message_queue, &complete_message_uart1, K_NO_WAIT);
                     memset(&complete_message_uart1, 0, sizeof(complete_message_uart1)); // clear out the buffer to prepare for next read.
                     break;
                 }
@@ -78,10 +70,9 @@ static void uart1_cb(const struct device *dev, struct uart_event *evt, void *use
                 if (uart1_double_buffer[1][i] == '\n')
                 {
                     complete_message_uart1_counter = 0;
-                    LOG_INF("complete_message_uart1 = %s \n", complete_message_uart1);
-                    // Send a message to a work queue
-                    k_msgq_put(&message_queue, &complete_message_uart1, K_NO_WAIT);
-
+                    // LOG_INF("complete_message_uart1 = %s \n", complete_message_uart1);
+                    //  Send a message to a work queue
+                    k_msgq_put(&uart1_message_queue, &complete_message_uart1, K_NO_WAIT);
                     memset(&complete_message_uart1, 0, sizeof(complete_message_uart1)); // clear out the buffer to prepare for next read.
                     break;
                 }
@@ -128,14 +119,13 @@ void app_uart1_init()
         return err;
     }
     uart_rx_enable(dev_uart1, uart1_double_buffer[0], UART1_BUF_SIZE, UART1_RX_TIMEOUT_MS);
-
 }
 
 // mest be terminated with \n
 bool uart1_send_string(const char *str)
 {
-    LOG_INF("Sending string: %s", str);
-    LOG_INF("String length: %d", strlen(str));
+    // LOG_INF("Sending string: %s", str);
+    LOG_DBG("UART1_TX: %s (%d)", str, strlen(str));
     uint8_t err = uart_tx(dev_uart1, str, strlen(str), 1000);
     if (err != 0)
     {
@@ -146,17 +136,16 @@ bool uart1_send_string(const char *str)
     return 1;
 }
 
-static void uart1_parser_thread()
+void uart1_parser_thread(void)
 {
-    char *data;
+    uint8_t data[24];
     while (1)
     {
         /* get a data item */
-        // k_msgq_get(&message_queue, &data, K_FOREVER);
-        // LOG_DBG("Received message in parser: %s", data);
-        // k_yield();
-        LOG_DBG("Parser thread is running");
-        k_sleep(K_MSEC(1000));
+        k_msgq_get(&uart1_message_queue, &data, K_FOREVER);
+        LOG_DBG("UART1_RX: %s (%d)", data, strlen(data));
+        k_yield();
     }
 }
+
 // END OF UART1 FUNCTIONS

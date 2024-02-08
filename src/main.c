@@ -8,6 +8,8 @@
 #include "stdio.h"
 #include "zephyr/drivers/uart.h"
 
+
+
 static const struct device *dev_uart0;
 static const struct device *dev_uart1;
 

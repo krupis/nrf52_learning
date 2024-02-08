@@ -153,7 +153,6 @@ void uart0_parser_thread(void)
                 // Print the message
                 LOG_DBG("%s", message_buff);                             // Newline already included
                 LOG_DBG("Message length = %u \n", strlen(message_buff)); // Newline already included
-                // HAL_UART_Transmit(&huart6, message_buff, strlen(message_buff), 10);
                 //  Free the allocated memory
                 free(message_buff);
                 // Move to the next token

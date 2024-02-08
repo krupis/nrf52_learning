@@ -7,7 +7,9 @@
 #include <zephyr/kernel.h>
 #include "stdio.h"
 #include "zephyr/drivers/uart.h"
-
+#define LOG_LEVEL 4
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(nrf52_learning);
 
 
 static const struct device *dev_uart0;

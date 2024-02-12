@@ -11,13 +11,11 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(nrf52_learning);
 
-
 static const struct device *dev_uart0;
 static const struct device *dev_uart1;
 
 static void app_uart0_init();
 static void uart0_irq_handler(const struct device *dev, void *context);
-
 
 static void app_uart1_init();
 static void uart1_irq_receive_handler(const struct device *dev, void *context);
@@ -25,13 +23,10 @@ static void uart1_irq_transmit_handler(const struct device *dev, void *context);
 
 static K_SEM_DEFINE(tx_sem, 0, 1); // Semaphore to signal UART data transmitted
 
-
 static uint8_t *tx_data;
 static size_t tx_data_length;
 
 #define RX_BUF_SIZE 64
-
-
 
 static void app_uart0_init()
 {
@@ -43,8 +38,6 @@ static void app_uart0_init()
 	uart_irq_callback_set(dev_uart0, uart0_irq_handler);
 	uart_irq_rx_enable(dev_uart0);
 }
-
-
 
 static void uart0_irq_handler(const struct device *dev, void *context)
 {
@@ -63,16 +56,12 @@ static void uart0_irq_handler(const struct device *dev, void *context)
 			{
 				command_line[char_counter] = '\0'; // put null at the end of the string to indicate end of message or end of string
 				char_counter = 0;				   // reset the char counter
-				printk("command_line = %s \n", command_line);
+				printk("UART0_RX: %s \n", command_line);
 				memset(&command_line, 0, sizeof(command_line));
 			}
 		}
 	}
 }
-
-
-
-
 
 // Initialize UART1
 static void app_uart1_init()
@@ -103,8 +92,9 @@ static void uart1_irq_receive_handler(const struct device *dev, void *context)
 			if (char_received == '\n' || char_received == '\r')
 			{
 				command_line[char_counter] = '\0'; // put null at the end of the string to indicate end of message or end of string
-				char_counter = 0;				   // reset the char counter
-				printk("UART1 Received = %s \n", command_line);
+				printk("UART1_RX(%u): %s \n", char_counter, command_line);
+				char_counter = 0; // reset the char counter
+
 				memset(&command_line, 0, sizeof(command_line));
 			}
 		}
@@ -145,9 +135,11 @@ static void uart1_irq_transmit_handler(const struct device *dev, void *user_data
 	// METHOD2
 	if (uart_irq_tx_ready(dev) && tx_data_idx < tx_data_length)
 	{
-		LOG_INF("Transmitting data over UART1\n");
-		LOG_INF("tx_data_length = %u \n", tx_data_length);
-		LOG_INF("tx_data_idx = %u \n", tx_data_idx);
+		// LOG_INF("Transmitting data over UART1\n");
+		// LOG_INF("tx_data_length = %u \n", tx_data_length);
+		// LOG_INF("tx_data_idx = %u \n", tx_data_idx);
+		LOG_INF("UART1_TX(%u): = %s \n", tx_data_length, tx_data);
+
 		int tx_send = MIN(CONFIG_UART_1_NRF_TX_BUFFER_SIZE, tx_data_length - tx_data_idx);
 		int tx_sent = uart_fifo_fill(dev, (uint8_t *)&tx_data[tx_data_idx], tx_send);
 		if (tx_sent <= 0)
@@ -176,13 +168,6 @@ int uart_irq_tx(const struct device *dev, const uint8_t *buf, size_t len)
 	return len;
 }
 
-
-
-
-
-
-
-
 int main(void)
 {
 	app_uart0_init();
@@ -192,9 +177,4 @@ int main(void)
 		k_msleep(1000);
 		uart_irq_tx(dev_uart1, "Hello from UART1\n", 17);
 	}
-
 }
-
-
-
-

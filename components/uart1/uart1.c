@@ -125,7 +125,7 @@ void app_uart1_init()
 bool uart1_send_string(const char *str)
 {
     // LOG_INF("Sending string: %s", str);
-    LOG_DBG("UART1_TX: %s (%d)", str, strlen(str));
+    LOG_DBG("UART1_TX(%u): %s", strlen(str), str);
     uint8_t err = uart_tx(dev_uart1, str, strlen(str), 1000);
     if (err != 0)
     {
@@ -143,7 +143,7 @@ void uart1_parser_thread(void)
     {
         /* get a data item */
         k_msgq_get(&uart1_message_queue, &data, K_FOREVER);
-        LOG_DBG("UART1_RX: %s (%d)", data, strlen(data));
+        LOG_DBG("UART1_RX(%u): %s", strlen(data), data);
         k_yield();
     }
 }

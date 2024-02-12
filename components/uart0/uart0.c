@@ -127,7 +127,7 @@ void uart0_parser_thread(void)
     {
         /* get a data item */
         k_msgq_get(&uart0_message_queue, &data, K_FOREVER);
-        LOG_DBG("UART0_RX: %s (%d)", data, strlen(data));
+        LOG_DBG("UART0_RX(%u): %s", strlen(data), data);
         if (strncmp((char *)data, "UART1:", 6) == 0)
         {
             strtok(data, ":"); // Split and ignore the "UART6" part

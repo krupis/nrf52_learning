@@ -1,5 +1,7 @@
 #include "uart0.h"
 
+#include "uart1.h"
+
 #define LOG_LEVEL 4
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(uart0);
@@ -151,14 +153,16 @@ void uart0_parser_thread(void)
                 }
 
                 // Print the message
-                LOG_DBG("%s", message_buff);                             // Newline already included
-                LOG_DBG("Message length = %u \n", strlen(message_buff)); // Newline already included
+                //LOG_DBG("%s", message_buff);                             // Newline already included
+                //LOG_DBG("Message length = %u \n", strlen(message_buff)); // Newline already included
                 //  Free the allocated memory
+                uart1_send_string(message_buff);
+
                 free(message_buff);
                 // Move to the next token
                 token = strtok(NULL, " ");
             }
-            return;
+            //return;
         }
         k_yield();
     }

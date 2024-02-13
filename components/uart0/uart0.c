@@ -1,6 +1,5 @@
 #include "uart0.h"
 
-#include "uart1.h"
 
 #define LOG_LEVEL 4
 #include <zephyr/logging/log.h>
@@ -128,42 +127,6 @@ void uart0_parser_thread(void)
         /* get a data item */
         k_msgq_get(&uart0_message_queue, &data, K_FOREVER);
         LOG_DBG("UART0_RX(%u): %s", strlen(data), data);
-        if (strncmp((char *)data, "UART1:", 6) == 0)
-        {
-            strtok(data, ":"); // Split and ignore the "UART6" part
-            char *token = strtok(NULL, " ");
-            while (token != NULL)
-            {
-                char *message_buff = malloc(UART0_BUF_SIZE);
-                if (message_buff == NULL)
-                {
-                    LOG_ERR("Failed to allocate memory \n");
-                    k_msleep(1000);
-                    return;
-                }
-                // Copy the token into message_buff
-                strncpy(message_buff, token, UART0_BUF_SIZE - 1);
-                message_buff[-1] = '\0'; // Ensure null termination
-                // Append newline character if space is available
-                size_t len = strlen(message_buff);
-                if (len < UART0_BUF_SIZE - 1)
-                {
-                    message_buff[len] = '\n';
-                    message_buff[len + 1] = '\0';
-                }
-
-                // Print the message
-                //LOG_DBG("%s", message_buff);                             // Newline already included
-                //LOG_DBG("Message length = %u \n", strlen(message_buff)); // Newline already included
-                //  Free the allocated memory
-                uart1_send_string(message_buff);
-
-                free(message_buff);
-                // Move to the next token
-                token = strtok(NULL, " ");
-            }
-            //return;
-        }
         k_yield();
     }
 }

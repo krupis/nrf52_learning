@@ -28,7 +28,7 @@ int main(void)
 
 	while (1)
 	{
-		// LOG_INF("Hello");
+		LOG_INF("Hello");
 		k_sleep(K_MSEC(1000));
 	}
 }

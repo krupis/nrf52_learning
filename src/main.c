@@ -6,6 +6,7 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/sys/poweroff.h>
 #include "stdio.h"
 #include "my_gpio.h"
 #include "uart0.h"
@@ -28,10 +29,13 @@ int main(void)
 {
 	app_uart0_init();
 	app_uart1_init();
-	while(1){	
-		//uart_tx(dev_uart1, "Hello World\n", 12, 1000);
-		//uart1_send_string("Hello World\n");
-		k_sleep(K_MSEC(1000));
-	}
+
+	//nrf_pwr_mgmt_run();
+	//sys_poweroff();
+	// while(1){	
+	// 	//uart_tx(dev_uart1, "Hello World\n", 12, 1000);
+	// 	//uart1_send_string("Hello World\n");
+	// 	k_sleep(K_MSEC(1000));
+	// }
 
 }

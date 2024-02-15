@@ -13,8 +13,6 @@
 #include <zephyr/drivers/uart.h>
 #include <zephyr/sys/ring_buffer.h>
 
-
-
 #define RING_BUF_SIZE 1024
 uint8_t ring_buffer[RING_BUF_SIZE];
 
@@ -27,15 +25,11 @@ BUILD_ASSERT(DT_NODE_HAS_COMPAT(DT_CHOSEN(zephyr_console), zephyr_cdc_acm_uart),
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(nrf52_learning);
 
-
 static const struct device *usb_device;
 
 static void uart0_irq_handler(const struct device *dev, void *context);
 
-
 #define RX_BUF_SIZE 64
-
-
 
 static void uart0_irq_handler(const struct device *dev, void *context)
 {
@@ -60,8 +54,6 @@ static void uart0_irq_handler(const struct device *dev, void *context)
 		}
 	}
 }
-
-
 
 /*
 static void uart0_irq_handler(const struct device *dev, void *context)
@@ -113,9 +105,6 @@ static void uart0_irq_handler(const struct device *dev, void *context)
 }
 */
 
-
-
-
 int main(void)
 {
 	if (usb_enable(NULL))
@@ -123,8 +112,7 @@ int main(void)
 		return 0;
 	}
 
-	//ring_buf_init(&ringbuf, sizeof(ring_buffer), ring_buffer);
-
+	// ring_buf_init(&ringbuf, sizeof(ring_buffer), ring_buffer);
 
 	usb_device = DEVICE_DT_GET_ONE(zephyr_cdc_acm_uart);
 	if (!device_is_ready(usb_device))
@@ -133,14 +121,4 @@ int main(void)
 	}
 	uart_irq_callback_set(usb_device, uart0_irq_handler);
 	uart_irq_rx_enable(usb_device);
-
-
-
-
-
-	// while (1)
-	// {
-	// 	LOG_INF("Hello");
-	// 	k_sleep(K_MSEC(1000));
-	// }
 }

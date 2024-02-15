@@ -54,9 +54,6 @@ static void uart0_irq_handler(const struct device *dev, void *context)
 	}
 }
 
-
-
-
 int main(void)
 {
 	app_uart0_init();

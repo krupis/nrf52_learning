@@ -72,11 +72,4 @@ int main(void)
 	}
 	uart_irq_callback_set(usb_device, uart0_irq_handler);
 	uart_irq_rx_enable(usb_device);
-	while (1)
-	{
-		// printf("Hello world \n");
-		//  printk("Printing using printk\n");
-
-		k_sleep(K_MSEC(1000));
-	}
 }

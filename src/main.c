@@ -45,19 +45,22 @@ static void uart0_irq_handler(const struct device *dev, void *context)
 	static uint8_t command_line[RX_BUF_SIZE];
 	static int char_counter = 0;
 
-	if (uart_irq_rx_ready(dev))
+	while (uart_irq_update(dev) && uart_irq_is_pending(dev))
 	{
-		int len = uart_fifo_read(dev, &char_received, 1);
-		if (len)
+		if (uart_irq_rx_ready(dev))
 		{
-			command_line[char_counter] = char_received;
-			char_counter++;
-			if (char_received == '\n' || char_received == '\r')
+			int len = uart_fifo_read(dev, &char_received, 1);
+			if (len)
 			{
-				command_line[char_counter] = '\0'; // put null at the end of the string to indicate end of message or end of string
-				char_counter = 0;				   // reset the char counter
-				printk("UART0_RX: %s \n", command_line);
-				memset(&command_line, 0, sizeof(command_line));
+				command_line[char_counter] = char_received;
+				char_counter++;
+				if (char_received == '\n' || char_received == '\r')
+				{
+					command_line[char_counter] = '\0'; // put null at the end of the string to indicate end of message or end of string			   // reset the char counter
+					printk("UART0_RX(%u): %s \n", char_counter, command_line);
+					char_counter = 0;
+					memset(&command_line, 0, sizeof(command_line));
+				}
 			}
 		}
 	}
@@ -81,21 +84,23 @@ static void uart1_irq_receive_handler(const struct device *dev, void *context)
 	uint8_t char_received;
 	static uint8_t command_line[RX_BUF_SIZE];
 	static int char_counter = 0;
-
-	if (uart_irq_rx_ready(dev))
+	while (uart_irq_update(dev) && uart_irq_is_pending(dev))
 	{
-		int len = uart_fifo_read(dev, &char_received, 1);
-		if (len)
+		if (uart_irq_rx_ready(dev))
 		{
-			command_line[char_counter] = char_received;
-			char_counter++;
-			if (char_received == '\n' || char_received == '\r')
+			int len = uart_fifo_read(dev, &char_received, 1);
+			if (len)
 			{
-				command_line[char_counter] = '\0'; // put null at the end of the string to indicate end of message or end of string
-				printk("UART1_RX(%u): %s \n", char_counter, command_line);
-				char_counter = 0; // reset the char counter
+				command_line[char_counter] = char_received;
+				char_counter++;
+				if (char_received == '\n' || char_received == '\r')
+				{
+					command_line[char_counter] = '\0'; // put null at the end of the string to indicate end of message or end of string
+					printk("UART1_RX(%u): %s \n", char_counter, command_line);
+					char_counter = 0; // reset the char counter
 
-				memset(&command_line, 0, sizeof(command_line));
+					memset(&command_line, 0, sizeof(command_line));
+				}
 			}
 		}
 	}
@@ -138,7 +143,7 @@ static void uart1_irq_transmit_handler(const struct device *dev, void *user_data
 		// LOG_INF("Transmitting data over UART1\n");
 		// LOG_INF("tx_data_length = %u \n", tx_data_length);
 		// LOG_INF("tx_data_idx = %u \n", tx_data_idx);
-		LOG_INF("UART1_TX(%u): = %s \n", tx_data_length, tx_data);
+		printk("UART1_TX(%u): = %s \n", tx_data_length, tx_data);
 
 		int tx_send = MIN(CONFIG_UART_1_NRF_TX_BUFFER_SIZE, tx_data_length - tx_data_idx);
 		int tx_sent = uart_fifo_fill(dev, (uint8_t *)&tx_data[tx_data_idx], tx_send);

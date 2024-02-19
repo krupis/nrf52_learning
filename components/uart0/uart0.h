@@ -9,5 +9,5 @@
 #define uart0_message_queue_size 10
 #define uart0_message_size 64
 
-void app_uart_init();
+void app_uart0_init();
 void uart0_parser_thread(void);

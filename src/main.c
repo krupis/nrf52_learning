@@ -150,6 +150,6 @@ int main(void)
 	while (1)
 	{
 		k_msleep(5000);
-		uart_irq_tx(dev_uart1, "Hello from UART1\n", 20);
+		uart_irq_tx(dev_uart1, "Hello from UART1\n", 17);
 	}
 }

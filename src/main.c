@@ -97,7 +97,8 @@ static void uart1_irq_handler(const struct device *dev, void *context)
 	if (uart_irq_tx_ready(dev))
 	{
 		int tx_sent = uart_fifo_fill(dev, (uint8_t *)tx_data, tx_data_length);
-
+		LOG_INF("tx_sent: %u", tx_sent);
+		LOG_INF("Data to be sent length = %u",tx_data_length);
 		if (tx_sent <= 0)
 		{
 			LOG_ERR("Error %d sending data over UART1 bus\n", tx_sent);
@@ -116,6 +117,7 @@ static void uart1_irq_handler(const struct device *dev, void *context)
 	if (uart_irq_rx_ready(dev))
 	{
 		int len = uart_fifo_read(dev, &char_received, 1);
+		LOG_INF("uart_fifo_read len: %u", len);
 		if (len)
 		{
 			LOG_INF("UART1 data received: %c\n", char_received);

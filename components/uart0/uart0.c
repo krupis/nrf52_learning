@@ -120,6 +120,24 @@ void app_uart0_init()
     uart_rx_enable(dev_uart0, uart0_double_buffer[0], UART0_BUF_SIZE, UART0_RX_TIMEOUT_MS);
 }
 
+
+
+bool uart0_send_string(const char *str)
+{
+    // LOG_INF("Sending string: %s", str);
+    LOG_DBG("UART0_TX(%u): %s", strlen(str), str);
+    uint8_t err = uart_tx(dev_uart0, str, strlen(str), 1000);
+    if (err != 0)
+    {
+        LOG_ERR("Error sending string");
+        return 0;
+    }
+
+    return 1;
+}
+
+
+
 void uart0_parser_thread(void)
 {
     uint8_t data[24];

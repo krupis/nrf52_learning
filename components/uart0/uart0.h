@@ -11,3 +11,4 @@
 
 void app_uart0_init();
 void uart0_parser_thread(void);
+bool uart0_send_string(const char *str);
